@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LUCKYWIN INFINITY PRO</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffdf00; --gold-dark: #b8860b; --black: #050505;
+            --glass: rgba(255, 255, 255, 0.05); --red: #ff3e3e; --blue: #00c2ff;
+        }
+
+        /* --- CSS RESET & BASE --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { 
+            background: var(--black); color: #fff; margin: 0; padding: 0;
+            font-family: 'Montserrat', sans-serif; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+        }
+
+        /* --- AUTH PAGE (LUXURY DESIGN) --- */
+        #p-auth {
+            position: fixed; inset: 0; z-index: 9999; 
+            background: url('https://img.freepik.com/premium-photo/casino-poker-background-with-chips-dice-black-background_825313-21.jpg') center/cover;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-card {
+            background: rgba(0,0,0,0.92); backdrop-filter: blur(25px); width: 88%; max-width: 400px;
+            padding: 45px 35px; border-radius: 40px; border: 2px solid var(--gold);
+            text-align: center; box-shadow: 0 0 60px rgba(0,0,0,1);
+        }
+        .auth-card h1 { font-family: 'Orbitron'; color: var(--gold); font-size: 32px; margin-bottom: 30px; letter-spacing: 3px; text-shadow: 0 0 15px var(--gold); }
+        .inp {
+            width: 100%; padding: 18px; background: #111; border: 1px solid #333;
+            border-radius: 16px; color: #fff; margin-bottom: 15px; font-weight: bold; font-size: 16px;
+        }
+        .btn-main {
+            width: 100%; padding: 20px; background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+            border: none; border-radius: 16px; font-weight: 900; color: #000; cursor: pointer;
+            text-transform: uppercase; font-size: 18px; box-shadow: 0 10px 25px rgba(255,223,0,0.3);
+        }
+
+        /* --- MAIN APP UI --- */
+        .page { display: none; height: 100vh; width: 100vw; overflow-y: auto; padding-bottom: 110px; }
+        .active { display: block; animation: pageIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes pageIn { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .header {
+            height: 80px; background: rgba(0,0,0,0.95); display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100;
+        }
+        .bal-box {
+            background: #111; border: 2px solid var(--gold); border-radius: 50px;
+            padding: 8px 18px; font-family: 'Orbitron'; color: var(--gold); font-weight: 900;
+            box-shadow: inset 0 0 10px rgba(255,223,0,0.2);
+        }
+
+        /* --- GAME SECTION --- */
+        .stage-pro {
+            background: radial-gradient(circle, #222 0%, #000 100%);
+            margin: 20px; border-radius: 45px; border: 3px solid #333;
+            padding: 40px 10px; text-align: center; position: relative;
+            box-shadow: inset 0 0 50px #000, 0 15px 40px rgba(0,0,0,0.7);
+        }
+        .timer-pro {
+            width: 130px; height: 130px; border-radius: 50%; border: 6px solid #111;
+            border-top-color: var(--gold); margin: 0 auto 20px; display: flex;
+            align-items: center; justify-content: center; font-family: 'Orbitron';
+            font-size: 55px; color: var(--gold); text-shadow: 0 0 20px var(--gold);
+        }
+
+        /* --- RECHARGE & WITHDRAW --- */
+        .card-vip {
+            background: #111; border-radius: 35px; padding: 30px; margin: 20px;
+            border: 1.5px solid #222; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .qr-wrap {
+            background: #fff; padding: 15px; border-radius: 25px; width: 240px; height: 240px;
+            margin: 20px auto; border: 6px solid var(--gold); box-shadow: 0 0 30px rgba(255,223,0,0.2);
+        }
+        .qr-wrap img { width: 100%; height: 100%; border-radius: 10px; }
+
+        /* --- BOTTOM NAV --- */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(5,5,5,0.98);
+            border-top: 1.5px solid #222; display: flex; justify-content: space-around;
+            align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item { color: #555; text-align: center; font-size: 11px; font-weight: 900; transition: 0.3s; }
+        .nav-item.active { color: var(--gold); transform: translateY(-5px); }
+        .nav-item i { font-size: 26px; display: block; margin-bottom: 5px; }
+
+        /* --- ADMIN OVERLAY --- */
+        #adm-panel {
+            position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.98);
+            padding: 30px; display: none; overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="p-auth">
+        <div class="auth-card">
+            <h1 onclick="admEntry()">LUCKYWIN</h1>
+            <div id="auth-log">
+                <input type="text" id="l-u" class="inp" placeholder="Tên đăng nhập">
+                <input type="password" id="l-p" class="inp" placeholder="Mật khẩu">
+                <button class="btn-main" onclick="doLogin()">VÀO SÒNG BÀI</button>
+                <p style="margin-top:25px; color:#777;" onclick="toggleA(false)">Thành viên mới? <b style="color:var(--gold)">Đăng ký</b></p>
+            </div>
+            <div id="auth-reg" style="display:none;">
+                <input type="text" id="r-u" class="inp" placeholder="Tên tài khoản mới">
+                <input type="password" id="r-p" class="inp" placeholder="Mật khẩu bảo mật">
+                <button class="btn-main" onclick="doReg()">XÁC NHẬN ĐĂNG KÝ</button>
+                <p style="margin-top:25px; color:#777;" onclick="toggleA(true)">Đã có tài khoản? <b style="color:var(--gold)">Đăng nhập</b></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="p-lobby" class="page">
+        <div class="header">
+            <div style="font-family:'Orbitron'; font-weight:900; color:var(--gold); font-size:20px;">LUCKYWIN</div>
+            <div class="bal-box">💰 <span id="b-l">0</span></div>
+        </div>
+        <div style="padding: 20px;">
+            <div class="card-vip" onclick="go('p-tx')" style="background:linear-gradient(145deg, #1a1a1e, #000); border-color: var(--gold);">
+                <h2 style="margin:0; color:var(--gold); font-family:'Orbitron';">TÀI XỈU MD5</h2>
+                <p style="color:#555; margin-top:5px;">SÂN CHƠI ĐẲNG CẤP QUỐC TẾ</p>
+            </div>
+            <div class="card-vip" style="opacity:0.4;">
+                <h2 style="margin:0; color:var(--gold); font-family:'Orbitron';">XÓC ĐĨA VIP</h2>
+                <p style="color:#555; margin-top:5px;">Hệ thống đang bảo trì...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="p-tx" class="page">
+        <div class="header">
+            <span onclick="go('p-lobby')" style="color:#777; font-weight:900;">❮ QUAY LẠI</span>
+            <div class="bal-box">💰 <span id="b-tx">0</span></div>
+        </div>
+        <div class="stage-pro">
+            <div class="timer-pro" id="timer">30</div>
+            <div id="dice-ui" style="font-size:80px; filter: drop-shadow(0 0 15px #fff);">🎲🎲🎲</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; padding:0 20px;">
+            <button onclick="bet('tai')" style="height:100px; border-radius:25px; background:linear-gradient(180deg, #ff416c, #ff4b2b); border:none; font-size:35px; font-weight:900; color:#fff; box-shadow:0 8px 0 #900;">TÀI</button>
+            <button onclick="bet('xiu')" style="height:100px; border-radius:25px; background:linear-gradient(180deg, #00c6ff, #0072ff); border:none; font-size:35px; font-weight:900; color:#fff; box-shadow:0 8px 0 #003366;">XỈU</button>
+        </div>
+    </div>
+
+    <div id="p-recharge" class="page">
+        <div class="header"><h2 style="color:var(--gold); margin:0 auto;">NẠP TIỀN</h2></div>
+        <div class="card-vip">
+            <p style="color:#888;">Quét mã VietQR để nạp tự động</p>
+            <div class="qr-wrap">
+                <img id="qr-img" src="">
+            </div>
+            <p style="font-size:18px; color:var(--gold); font-weight:bold;">MB BANK: 0123456789</p>
+            <input type="number" id="amt-qr" class="inp" placeholder="Nhập số tiền..." oninput="genQR()" style="margin-top:15px;">
+        </div>
+    </div>
+
+    <div id="p-withdraw" class="page">
+        <div class="header"><h2 style="color:var(--gold); margin:0 auto;">RÚT TIỀN ATM</h2></div>
+        <div class="card-vip">
+            <input type="text" id="w-bank" class="inp" placeholder="Tên Ngân hàng (Ví dụ: MB Bank)">
+            <input type="text" id="w-stk" class="inp" placeholder="Số tài khoản">
+            <input type="text" id="w-name" class="inp" placeholder="Tên chủ tài khoản">
+            <input type="number" id="w-amt" class="inp" placeholder="Số tiền (Tối thiểu 100,000đ)">
+            <button class="btn-main" onclick="doWithdraw()">GỬI LỆNH RÚT</button>
+            <p style="color:#555; font-size:11px; margin-top:15px;">* Tiền về tài khoản sau khi Admin duyệt (5-15p).</p>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="go('p-lobby')"><i>🏠</i>SẢNH</div>
+        <div class="nav-item" onclick="go('p-recharge')"><i>💳</i>NẠP</div>
+        <div class="nav-item" onclick="go('p-withdraw')"><i>💰</i>RÚT</div>
+        <div class="nav-item" onclick="alert('Tele Admin: @LuckyWin_CSKH')"><i>📞</i>CSKH</div>
+    </div>
+
+    <div id="adm-panel">
+        <h1 style="color:var(--gold); text-align:center;">ADMIN MENU</h1>
+        <div class="card-vip">
+            <p>ÉP KẾT QUẢ TX</p>
+            <select id="adm-set" class="inp"><option value="">RANDOM</option><option value="tai">ÉP TÀI</option><option value="xiu">ÉP XỈU</option></select>
+            <button class="btn-main" onclick="setRes()">LƯU LỆNH</button>
+        </div>
+        <div class="card-vip">
+            <p>CỘNG TIỀN KHÁCH</p>
+            <input type="text" id="adm-u" class="inp" placeholder="Tên khách">
+            <input type="number" id="adm-m" class="inp" placeholder="Số tiền">
+            <button class="btn-main" style="background:green; color:#fff;" onclick="addM()">XÁC NHẬN</button>
+        </div>
+        <button class="btn-main" style="background:#333; color:#fff;" onclick="document.getElementById('adm-panel').style.display='none'">THOÁT ADMIN</button>
+    </div>
+
+<script>
+    // --- CONFIG ---
+    const firebaseConfig = { databaseURL: "https://shopmduy-default-rtdb.asia-southeast1.firebasedatabase.app" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let curU = null, userBal = 0, timeLeft = 30, admCount = 0;
+
+    function toggleA(isL) {
+        document.getElementById('auth-log').style.display = isL ? 'block' : 'none';
+        document.getElementById('auth-reg').style.display = isL ? 'none' : 'block';
+    }
+
+    function doReg() {
+        const u = document.getElementById('r-u').value.trim().toLowerCase();
+        const p = document.getElementById('r-p').value;
+        if(u.length < 4) return alert("Tên quá ngắn!");
+        db.ref('users/'+u).once('value', s => {
+            if(s.exists()) alert("Tên đã có chủ!");
+            else db.ref('users/'+u).set({ password: p, balance: 100000 }).then(() => { alert("Đăng ký thành công!"); toggleA(true); });
+        });
+    }
+
+    function doLogin() {
+        const u = document.getElementById('l-u').value.trim().toLowerCase();
+        const p = document.getElementById('l-p').value;
+        db.ref('users/'+u).once('value', s => {
+            if(s.exists() && s.val().password === p) { curU = u; initS(); document.getElementById('p-auth').style.display='none'; go('p-lobby'); }
+            else alert("Sai thông tin!");
+        });
+    }
+
+    function initS() {
+        db.ref('users/'+curU).on('value', s => {
+            userBal = s.val().balance || 0;
+            document.getElementById('b-l').innerText = document.getElementById('b-tx').innerText = userBal.toLocaleString();
+        });
+        genQR();
+        startLoop();
+    }
+
+    function go(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach((n,i) => {
+            n.classList.remove('active');
+            if(id==='p-lobby'&&i===0) n.classList.add('active');
+            if(id==='p-recharge'&&i===1) n.classList.add('active');
+            if(id==='p-withdraw'&&i===2) n.classList.add('active');
+        });
+    }
+
+    function genQR() {
+        const amt = document.getElementById('amt-qr').value || 100000;
+        // Sử dụng API VietQR (thay bằng mã sếp)
+        document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=BANK:MB|STK:0123456789|AMT:${amt}|MEMO:NAP ${curU}`;
+    }
+
+    function doWithdraw() {
+        const amt = parseInt(document.getElementById('w-amt').value);
+        if(amt < 100000) return alert("Rút tối thiểu 100,000đ sếp ơi!");
+        if(amt > userBal) return alert("Ví không đủ tiền!");
+        db.ref('users/'+curU+'/balance').transaction(v => v - amt);
+        db.ref('withdraws').push({ u: curU, bank: document.getElementById('w-bank').value, stk: document.getElementById('w-stk').value, name: document.getElementById('w-name').value, amt: amt });
+        alert("Lệnh rút đã gửi! Đợi Admin duyệt nhé.");
+    }
+
+    function startLoop() {
+        setInterval(() => {
+            timeLeft--;
+            if(timeLeft < 0) timeLeft = 35;
+            let v = timeLeft > 30 ? "MỞ" : (timeLeft < 10 ? "0"+timeLeft : timeLeft);
+            document.getElementById('timer').innerText = v;
+            if(timeLeft === 0) {
+                db.ref('control').once('value', s => {
+                    let res = s.val() || (Math.random() > 0.5 ? 'tai' : 'xiu');
+                    document.getElementById('dice-ui').innerText = res === 'tai' ? '⚅⚄⚃' : '⚀⚁⚂';
+                    db.ref('control').remove();
+                });
+            }
+            if(timeLeft === 35) document.getElementById('dice-ui').innerText = "🎲🎲🎲";
+        }, 1000);
+    }
+
+    function bet(side) {
+        if(timeLeft < 5 || timeLeft > 30) return alert("Hết giờ cược!");
+        db.ref('users/'+curU+'/balance').transaction(v => v - 100000);
+        alert("Đã cược 100,000đ vào " + side.toUpperCase());
+    }
+
+    // ADMIN GATE
+    function admEntry() { admCount++; if(admCount >= 5) { document.getElementById('adm-panel').style.display='block'; admCount=0; } }
+    function setRes() { db.ref('control').set(document.getElementById('adm-set').value); alert("Đã ép!"); }
+    function addM() {
+        const u = document.getElementById('adm-u').value.trim().toLowerCase();
+        const m = parseInt(document.getElementById('adm-m').value);
+        db.ref('users/'+u+'/balance').transaction(v => (v||0) + m);
+        alert("Xong!");
+    }
+</script>
+</body>
+</html>
